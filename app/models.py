@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+# from app.database import Base
 from datetime import datetime
 
+from sqlalchemy.orm import declarative_base
+Base = declarative_base()
 
 # class User(SQLAlchemyBaseUserTableUUID, Base):
 #     __tablename__ = "user"
@@ -65,3 +67,6 @@ class Ticket(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     consumers = relationship("Ticket", secondary="consumer_ticket_link", back_populates="tickets")
+
+if __name__ == '__main__':
+    pass
