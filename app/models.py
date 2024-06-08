@@ -1,10 +1,12 @@
 from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey
 from sqlalchemy.orm import relationship
-# from app.database import Base
+from app.database import Base
 from datetime import datetime
 
-from sqlalchemy.orm import declarative_base
-Base = declarative_base()
+
+# for create tables to database
+# from sqlalchemy.orm import declarative_base
+# Base = declarative_base()
 
 # class User(SQLAlchemyBaseUserTableUUID, Base):
 #     __tablename__ = "user"
@@ -52,7 +54,7 @@ class Consumer(Base):
     surname: str = Column(String)
     phone_number: str = Column(String, unique=True, nullable=False)
     email: str = Column(String, unique=True, nullable=False)
-    tickets = relationship("Ticket", secondary="consumer_ticket_link", back_populates="consumers")
+    tickets = relationship("ConsumerTicketLink", back_populates="consumer")
     # tickets = relationship("Ticket", secondary="consumer_ticket_link", back_populates=Ticket.consumers) # wrong sintax
 
 
@@ -66,7 +68,8 @@ class Ticket(Base):
     seat: str = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    consumers = relationship("Ticket", secondary="consumer_ticket_link", back_populates="tickets")
+    consumers = relationship("ConsumerTicketLink", back_populates="ticket")
+
 
 if __name__ == '__main__':
     pass

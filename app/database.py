@@ -3,9 +3,9 @@ import asyncio
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from config import DATABASE_URL
+from .config import DATABASE_URL
 
-from models import ConsumerTicketLink, Consumer, Ticket, Base
+# from models import ConsumerTicketLink, Consumer, Ticket, Base
 
 # Create SQLAlchemy async engine
 engine = create_async_engine(DATABASE_URL, echo=True)
@@ -14,7 +14,7 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 async_session_maker = sessionmaker(bind=engine, class_=AsyncSession)
 
 # Base class for declarative models
-# Base = declarative_base()
+Base = declarative_base()
 
 
 # Function to get a new database session

@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
-from app.database import Base, engine
-from app.routers import users
+# from app.database import Base, engine
+from app.routers import consumer
 
 
 import logging
@@ -18,8 +18,8 @@ app = FastAPI()
 
 # TODO: combine it in the separate function
 # Create database tables
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 # Mount routers
-app.include_router(users.router, prefix="/api/v1")
+app.include_router(consumer.router, prefix="/api/v1")
 

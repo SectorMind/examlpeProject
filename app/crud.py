@@ -3,19 +3,37 @@ from datetime import datetime
 from typing import Type
 
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from uuid import uuid4
 from app.models import Consumer, Ticket
 from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema
+from uuid import uuid4
+from datetime import datetime
+
 
 # Create Consumer
-def create_consumer(db: Session, consumer: ConsumerSchema, user_id: int):
+async def create_consumer(db: AsyncSession, consumer: ConsumerSchema):
     db_consumer = Consumer(
-        id=uuid4(),
-        user_id=user_id,
-        username=consumer.username,
-        full_name=consumer.full_name,
+        id=consumer.id,
+        name=consumer.name,
+        surname=consumer.surname,
+        phone_number=consumer.phone_number,
         email=consumer.email,
-        phone=consumer.phone,
+    )
+    db.add(db_consumer)
+    await db.commit()
+    await db.refresh(db_consumer)
+    return db_consumer
+
+
+# Create Ticket
+def create_ticket(db: Session, ticket: TicketSchema):
+    db_consumer = Consumer(
+        id=ticket.id,
+        event_name=ticket.event_name,
+        row=ticket.row,
+        seat=ticket.seat,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
