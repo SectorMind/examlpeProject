@@ -4,6 +4,7 @@ from typing import Type
 
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from uuid import uuid4
 from app.models import Consumer, Ticket
@@ -25,6 +26,12 @@ async def create_consumer(db: AsyncSession, consumer: ConsumerSchema):
     await db.commit()
     await db.refresh(db_consumer)
     return db_consumer
+
+
+async def get_consumers(db: AsyncSession):
+    result = await db.execute(select(Consumer))
+    consumers = result.scalars().all()
+    return consumers
 
 
 # Create Ticket

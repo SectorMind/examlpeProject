@@ -9,7 +9,6 @@ from app.database import get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
-from app.schemas import Consumer
 
 router = APIRouter()
 
@@ -21,6 +20,11 @@ async def create_consumer(consumer: schemas.Consumer, db: AsyncSession = Depends
         raise HTTPException(status_code=400, detail="Consumer creation failed")
     return db_consumer
 
+
+@router.get("/consumers/", response_model=List[schemas.Consumer])
+async def get_consumers(db: AsyncSession = Depends(get_async_session)):
+    consumers = await crud.get_consumers(db)
+    return consumers
 
 # @router.get("/{consumer_id}", response_model=schemas.Consumer)
 # def read_consumer(consumer_id: int, db: Session = Depends(get_db)):
