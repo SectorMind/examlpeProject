@@ -22,6 +22,8 @@ class Ticket(BaseModel):
     event_name: str
     row: str
     seat: str
+    created_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
 
     class Config:
         orm_mode = True

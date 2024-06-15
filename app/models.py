@@ -71,7 +71,7 @@ class Consumer(Base):
 class Ticket(Base):
     __tablename__ = "ticket"
 
-    id: int = Column(Integer, primary_key=True, index=True)
+    id: int = Column(Integer, primary_key=True, index=True, autoincrement=True)
     # TODO: make seat identifier as separate class
     event_name: str = Column(String)
     row: str = Column(String)

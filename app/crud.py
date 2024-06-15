@@ -34,18 +34,18 @@ async def get_consumers(db: AsyncSession):
 
 
 # Create Ticket
-async def create_ticket(db: Session, ticket: TicketSchema):
+async def create_ticket(db: AsyncSession, ticket: TicketSchema):
     db_ticket = Ticket(
         id=ticket.id,
         event_name=ticket.event_name,
         row=ticket.row,
         seat=ticket.seat,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at=ticket.created_at,
+        updated_at=ticket.updated_at
     )
     db.add(db_ticket)
-    db.commit()
-    db.refresh(db_ticket)
+    await db.commit()
+    await db.refresh(db_ticket)
     return db_ticket
 
 
