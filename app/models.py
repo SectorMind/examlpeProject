@@ -45,14 +45,14 @@ class ConsumerTicketLink(Base):
     ticket = relationship("Ticket", back_populates="consumers")
 
 
-class EventTicketLink(Base):
-    __tablename__ = "event_ticket_link"
-
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    event_id: UUID = Column(UUID, ForeignKey("event.id"))
-    ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
-    event = relationship("Event", back_populates="events")
-    ticket = relationship("Ticket", back_populates="consumers")
+# class EventTicketLink(Base):
+#     __tablename__ = "event_ticket_link"
+#
+#     id: int = Column(Integer, primary_key=True, autoincrement=True)
+#     event_id: UUID = Column(UUID, ForeignKey("event.id"))
+#     ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
+#     event = relationship("Event", back_populates="events")
+#     ticket = relationship("Ticket", back_populates="consumers")
 
 
 class Consumer(Base):
@@ -81,28 +81,28 @@ class Ticket(Base):
     consumers = relationship("ConsumerTicketLink", back_populates="ticket")
 
 
-class Event(Base):
-    __tablename__ = "event"
-
-    id: int = Column(Integer, primary_key=True, index=True)
-    event_name: str = Column(String)
-    date: datetime = Column(DateTime)
-    location: str = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    tickets = relationship("ConsumerTicketLink", back_populates="event")
-
-
-class Hall(Base):
-    __tablename__ = "hall"
-
-    id: int = Column(Integer, primary_key=True, index=True)
-    hall_name: str = Column(String)
-    row: str = Column(String)
-    seat: str = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    tickets = relationship("ConsumerTicketLink", back_populates="event")
+# class Event(Base):
+#     __tablename__ = "event"
+#
+#     id: int = Column(Integer, primary_key=True, index=True)
+#     event_name: str = Column(String)
+#     date: datetime = Column(DateTime)
+#     location: str = Column(String)
+#     created_at = Column(DateTime, default=datetime.utcnow)
+#     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+#     tickets = relationship("ConsumerTicketLink", back_populates="event")
+#
+#
+# class Hall(Base):
+#     __tablename__ = "hall"
+#
+#     id: int = Column(Integer, primary_key=True, index=True)
+#     hall_name: str = Column(String)
+#     row: str = Column(String)
+#     seat: str = Column(String)
+#     created_at = Column(DateTime, default=datetime.utcnow)
+#     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+#     tickets = relationship("ConsumerTicketLink", back_populates="event")
 
 
 if __name__ == '__main__':
