@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from uuid import uuid4
-from app.models import Consumer, Ticket
+from app.models import Consumer, Ticket, Event
 from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema
 from uuid import uuid4
 from datetime import datetime
@@ -16,7 +15,7 @@ from datetime import datetime
 # Create Consumer
 async def create_consumer(db: AsyncSession, consumer: ConsumerSchema):
     db_consumer = Consumer(
-        id=consumer.id,
+        id=uuid4(),
         name=consumer.name,
         surname=consumer.surname,
         phone_number=consumer.phone_number,
@@ -35,7 +34,7 @@ async def get_consumers(db: AsyncSession):
 
 
 # Create Ticket
-def create_ticket(db: Session, ticket: TicketSchema):
+async def create_ticket(db: Session, ticket: TicketSchema):
     db_consumer = Consumer(
         id=ticket.id,
         event_name=ticket.event_name,
@@ -48,3 +47,22 @@ def create_ticket(db: Session, ticket: TicketSchema):
     db.commit()
     db.refresh(db_consumer)
     return db_consumer
+
+
+async def create_event(db: AsyncSession, event: Event):
+    db_event = Event(
+        id=uuid4(),
+        name=event.name,
+        date=event.date,
+        location=event.location,
+    )
+    db.add(db_event)
+    await db.commit()
+    await db.refresh(db_event)
+    return db_event
+
+
+async def get_events(db: AsyncSession):
+    result = await db.execute(select(Event))
+    events = result.scalars().all()
+    return events

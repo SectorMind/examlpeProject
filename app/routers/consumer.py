@@ -7,7 +7,6 @@ from typing import List
 from app import crud, schemas
 from app.database import get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 
 
 router = APIRouter()
