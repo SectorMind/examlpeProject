@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 from app import crud, schemas
 from app.database import get_async_session
@@ -25,31 +26,18 @@ async def get_consumers(db: AsyncSession = Depends(get_async_session)):
     consumers = await crud.get_consumers(db)
     return consumers
 
-# @router.get("/{consumer_id}", response_model=schemas.Consumer)
-# def read_consumer(consumer_id: int, db: Session = Depends(get_db)):
-#     db_consumer = crud.get_consumer(db, consumer_id=consumer_id)
-#     if db_consumer is None:
-#         raise HTTPException(status_code=404, detail="Consumer not found")
-#     return db_consumer
-#
-#
-# @router.put("/{consumer_id}", response_model=schemas.Consumer)
-# def update_consumer(consumer_id: int, consumer: schemas.Consumer, db: Session = Depends(get_db)):
-#     db_consumer = crud.get_consumer(db, consumer_id=consumer_id)
-#     if db_consumer is None:
-#         raise HTTPException(status_code=404, detail="Consumer not found")
-#     return crud.update_consumer(db=db, consumer_id=consumer_id, consumer=consumer)
-#
-#
-# @router.delete("/{consumer_id}", response_model=schemas.Consumer)
-# def delete_consumer(consumer_id: int, db: Session = Depends(get_db)):
-#     db_consumer = crud.get_consumer(db, consumer_id=consumer_id)
-#     if db_consumer is None:
-#         raise HTTPException(status_code=404, detail="Consumer not found")
-#     return crud.delete_consumer(db=db, consumer_id=consumer_id)
-#
-#
-# @router.get("/", response_model=List[schemas.Consumer])
-# def read_consumers(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-#     consumers = crud.get_consumers(db, skip=skip, limit=limit)
-#     return consumers
+
+@router.put("/consumer/{consumer_id}", response_model=schemas.Consumer)
+async def update_consumer(consumer_id: UUID, consumer: schemas.Consumer, db: AsyncSession = Depends(get_async_session)):
+    db_consumer = await crud.update_consumer(db=db, consumer_id=consumer_id, consumer=consumer)
+    if db_consumer is None:
+        raise HTTPException(status_code=404, detail="Consumer not found")
+    return db_consumer
+
+
+@router.delete("/consumer/{consumer_id}", response_model=schemas.Consumer)
+async def delete_consumer(consumer_id: UUID, db: AsyncSession = Depends(get_async_session)):
+    db_consumer = await crud.delete_consumer(db=db, consumer_id=consumer_id)
+    if db_consumer is None:
+        raise HTTPException(status_code=404, detail="Consumer not found")
+    return db_consumer

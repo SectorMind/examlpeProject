@@ -1,3 +1,4 @@
+# app/schemas.py
 import enum
 from uuid import UUID
 from pydantic import BaseModel
@@ -17,6 +18,7 @@ class Consumer(BaseModel):
         orm_mode = True
 
 
+# TODO:Add information about the ticket status (purchased or not)
 class Ticket(BaseModel):
     id: int
     event_name: str
