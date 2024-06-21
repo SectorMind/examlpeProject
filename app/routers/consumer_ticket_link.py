@@ -20,13 +20,15 @@ router = APIRouter()
 #     return db_ticket
 @router.post("/link_ticket_to_consumer/", response_model=schemas.ConsumerTicketLink)
 async def link_ticket_to_consumer(consumer_id: UUID, ticket_id: int, db: AsyncSession = Depends(get_async_session)):
-    db_link = await crud.create_link_ticket_to_consumer(db=db, consumer_id=consumer_id, ticket_id=ticket_id)
-    return db_link
+    db_ticket = await crud.create_link_ticket_to_consumer(db=db, consumer_id=consumer_id, ticket_id=ticket_id)
+    if db_ticket is None:
+        raise HTTPException(status_code=400, detail="Linking ticket to consumer failed")
+    return db_ticket
 
 
 @router.get("/consumer_tickets/{consumer_id}", response_model=List[schemas.Ticket])
 async def get_consumer_tickets(consumer_id: UUID, db: AsyncSession = Depends(get_async_session)):
-    tickets = await crud.get_consumer_tickets(db=db, consumer_id=consumer_id)
-    if not tickets:
+    purchased_tickets = await crud.get_consumer_tickets(db=db, consumer_id=consumer_id)
+    if not purchased_tickets:
         raise HTTPException(status_code=404, detail="No tickets found for the consumer")
-    return tickets
+    return purchased_tickets
