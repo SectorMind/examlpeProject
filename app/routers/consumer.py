@@ -1,13 +1,12 @@
 # app/routers/consumer.py
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from uuid import UUID
 
 from app import crud, schemas
 from app.database import get_async_session
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 router = APIRouter()

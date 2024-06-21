@@ -1,9 +1,10 @@
 # app/crud.py
-from datetime import datetime
 from typing import Type
+from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
 from app.models import Consumer, Ticket, ConsumerTicketLink  # , Event
@@ -12,15 +13,29 @@ from uuid import uuid4, UUID
 from datetime import datetime
 
 
-async def link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
+async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
+    # Check if the ticket is already linked to a consumer
+    if not await is_ticket_available(db, ticket_id):
+        raise HTTPException(status_code=400, detail="Ticket is already purchased")
+
     db_link = ConsumerTicketLink(
         consumer_id=consumer_id,
         ticket_id=ticket_id,
     )
     db.add(db_link)
-    await db.commit()
-    await db.refresh(db_link)
-    return db_link
+    try:
+        await db.commit()
+        await db.refresh(db_link)
+        return db_link
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Failed to link ticket to consumer")
+
+
+async def is_ticket_available(db: AsyncSession, ticket_id: int) -> bool:
+    result = await db.execute(select(ConsumerTicketLink).filter(ConsumerTicketLink.ticket_id == ticket_id))
+    link = result.scalars().first()
+    return link is None
 
 
 async def get_consumer_tickets(db: AsyncSession, consumer_id: UUID):
@@ -93,6 +108,22 @@ async def get_tickets(db: AsyncSession):
     result = await db.execute(select(Ticket))
     tickets = result.scalars().all()
     return tickets
+
+
+async def purchase_ticket(db: AsyncSession, consumer_id: UUID, ticket_id: int):
+    # Create a link between the consumer and the ticket
+    db_link = ConsumerTicketLink(
+        consumer_id=consumer_id,
+        ticket_id=ticket_id,
+    )
+    try:
+        db.add(db_link)
+        await db.commit()
+        await db.refresh(db_link)
+        return db_link
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Ticket is already purchased")
 
 
 async def update_ticket(db: AsyncSession, ticket_id: int, ticket: TicketSchema):

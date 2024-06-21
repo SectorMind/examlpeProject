@@ -1,8 +1,11 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
+
+import uuid
 
 
 # for create tables to database
@@ -40,33 +43,24 @@ class ConsumerTicketLink(Base):
     __tablename__ = "consumer_ticket_link"
 
     id: int = Column(Integer, primary_key=True, autoincrement=True)
-    consumer_id: UUID = Column(UUID, ForeignKey("consumer.id"))
+    consumer_id: UUID = Column(UUID_PG(as_uuid=True), ForeignKey("consumer.id"))
     ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
     consumer = relationship("Consumer", back_populates="tickets")
     ticket = relationship("Ticket", back_populates="consumers")
 
-
-# class EventTicketLink(Base):
-#     __tablename__ = "event_ticket_link"
-#
-#     id: int = Column(Integer, primary_key=True, autoincrement=True)
-#     event_id: UUID = Column(UUID, ForeignKey("event.id"))
-#     ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
-#     event = relationship("Event", back_populates="events")
-#     ticket = relationship("Ticket", back_populates="consumers")
+    __table_args__ = (UniqueConstraint('ticket_id', name='uq_ticket_id'),)
 
 
 class Consumer(Base):
     __tablename__ = "consumer"
 
-    id: UUID = Column(UUID, primary_key=True, index=True)
+    id: UUID = Column(UUID_PG(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     # TODO: bind to User table
     name: str = Column(String)
     surname: str = Column(String)
     phone_number: str = Column(String, unique=True, nullable=False)
     email: str = Column(String, unique=True, nullable=False)
     tickets = relationship("ConsumerTicketLink", back_populates="consumer")
-    # tickets = relationship("Ticket", secondary="consumer_ticket_link", back_populates=Ticket.consumers) # wrong sintax
 
 
 class Ticket(Base):
@@ -80,6 +74,16 @@ class Ticket(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     consumers = relationship("ConsumerTicketLink", back_populates="ticket")
+
+
+# class EventTicketLink(Base):
+#     __tablename__ = "event_ticket_link"
+#
+#     id: int = Column(Integer, primary_key=True, autoincrement=True)
+#     event_id: UUID = Column(UUID, ForeignKey("event.id"))
+#     ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
+#     event = relationship("Event", back_populates="events")
+#     ticket = relationship("Ticket", back_populates="consumers")
 
 
 # class Event(Base):
