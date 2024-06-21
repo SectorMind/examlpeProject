@@ -12,12 +12,6 @@ router = APIRouter()
 
 
 # TODO:Make it impossible to purchase an already purchased ticket.
-# @router.post("/link_ticket_to_consumer/", response_model=schemas.ConsumerTicketLink)
-# async def link_ticket_to_consumer(consumer_id: UUID, ticket_id: int, db: AsyncSession = Depends(get_async_session)):
-#     db_ticket = await crud.create_link_ticket_to_consumer(db=db, consumer_id=consumer_id, ticket_id=ticket_id)
-#     if db_ticket is None:
-#         raise HTTPException(status_code=400, detail="Linking ticket to consumer failed")
-#     return db_ticket
 @router.post("/link_ticket_to_consumer/", response_model=schemas.ConsumerTicketLink)
 async def link_ticket_to_consumer(consumer_id: UUID, ticket_id: int, db: AsyncSession = Depends(get_async_session)):
     db_ticket = await crud.create_link_ticket_to_consumer(db=db, consumer_id=consumer_id, ticket_id=ticket_id)
