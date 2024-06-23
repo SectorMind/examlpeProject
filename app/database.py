@@ -1,9 +1,11 @@
+# app/database.py
 import asyncio
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from .config import DATABASE_URL
+# from config import DATABASE_URL  # for create tables in db
 
 # from models import ConsumerTicketLink, Consumer, Ticket, Base
 
@@ -11,7 +13,7 @@ from .config import DATABASE_URL
 engine = create_async_engine(DATABASE_URL, echo=True)
 
 # Create an async session factory
-async_session_maker = sessionmaker(bind=engine, class_=AsyncSession)
+async_session_maker = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 # Base class for declarative models
 Base = declarative_base()

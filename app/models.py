@@ -1,11 +1,13 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import relationship
-from app.database import Base
-from datetime import datetime
 
+from app.database import Base
+
+from datetime import datetime
 import uuid
+import bcrypt
 
 
 # for create tables to database
@@ -39,6 +41,30 @@ import uuid
 #     is_verified: Mapped[bool] = mapped_column(
 #         Boolean, default=False, nullable=False
 #     )
+
+# class AdminUser(Base):
+#     __tablename__ = "admin_user"
+#
+#     id: UUID = Column(UUID_PG(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+#     username: str = Column(String, unique=True, nullable=False)
+#     hashed_password: str = Column(String, nullable=False)
+#
+#     def set_password(self, password: str):
+#         self.hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+#
+#     def check_password(self, password: str) -> bool:
+#         return bcrypt.checkpw(password.encode('utf-8'), self.hashed_password.encode('utf-8'))
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class ConsumerTicketLink(Base):
     __tablename__ = "consumer_ticket_link"
 

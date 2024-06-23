@@ -18,7 +18,6 @@ class Consumer(BaseModel):
         orm_mode = True
 
 
-# TODO:Add information about the ticket status (purchased or not)
 class Ticket(BaseModel):
     id: int
     event_name: str
@@ -57,6 +56,11 @@ class EventTicketLink(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PurchasePayload(BaseModel):
+    consumer: Consumer
+    tickets: List[Ticket]
 
 
 class Hall(BaseModel):

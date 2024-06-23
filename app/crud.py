@@ -1,5 +1,7 @@
 # app/crud.py
 from typing import Type
+import bcrypt
+
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
@@ -7,10 +9,35 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
-from app.models import Consumer, Ticket, ConsumerTicketLink  # , Event
-from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, ConsumerTicketLink as ConsumerTicketLinkSchema
+from app.models import Consumer, Ticket, ConsumerTicketLink, AdminUser  # , Event
+from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, \
+    ConsumerTicketLink as ConsumerTicketLinkSchema
 from uuid import uuid4, UUID
 from datetime import datetime
+
+
+async def create_admin_user(db: AsyncSession, username: str, password: str):
+    db_admin_user = AdminUser(
+        id=uuid4(),
+        username=username,
+    )
+    db_admin_user.set_password(password)
+    db.add(db_admin_user)
+    try:
+        await db.commit()
+        await db.refresh(db_admin_user)
+        return db_admin_user
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+
+async def authenticate_admin_user(db: AsyncSession, username: str, password: str):
+    result = await db.execute(select(AdminUser).filter(AdminUser.username == username))
+    db_admin_user = result.scalars().first()
+    if db_admin_user and db_admin_user.check_password(password):
+        return db_admin_user
+    return None
 
 
 async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
@@ -106,6 +133,12 @@ async def create_ticket(db: AsyncSession, ticket: TicketSchema):
 
 async def get_tickets(db: AsyncSession):
     result = await db.execute(select(Ticket))
+    tickets = result.scalars().all()
+    return tickets
+
+
+async def get_purchased_tickets(db: AsyncSession):
+    result = await db.execute(select(Ticket).join(ConsumerTicketLink))
     tickets = result.scalars().all()
     return tickets
 
