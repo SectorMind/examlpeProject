@@ -7,6 +7,13 @@ import uuid
 from datetime import datetime
 
 
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: str
+    full_name: str
+
+
 class Consumer(BaseModel):
     id: UUID
     name: str
@@ -39,6 +46,16 @@ class ConsumerTicketLink(BaseModel):
         orm_mode = True
 
 
+class ConsumerTicketLinkUpdate(BaseModel):
+    consumer_id: Optional[UUID] = None
+    ticket_id: Optional[int] = None
+
+
+class PurchasePayload(BaseModel):
+    consumer: Consumer
+    tickets: List[Ticket]
+
+
 class Event(BaseModel):
     id: int
     event_name: str
@@ -56,11 +73,6 @@ class EventTicketLink(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class PurchasePayload(BaseModel):
-    consumer: Consumer
-    tickets: List[Ticket]
 
 
 class Hall(BaseModel):

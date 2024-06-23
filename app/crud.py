@@ -16,30 +16,6 @@ from uuid import uuid4, UUID
 from datetime import datetime
 
 
-async def create_admin_user(db: AsyncSession, username: str, password: str):
-    db_admin_user = AdminUser(
-        id=uuid4(),
-        username=username,
-    )
-    db_admin_user.set_password(password)
-    db.add(db_admin_user)
-    try:
-        await db.commit()
-        await db.refresh(db_admin_user)
-        return db_admin_user
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(status_code=400, detail="Username already exists")
-
-
-async def authenticate_admin_user(db: AsyncSession, username: str, password: str):
-    result = await db.execute(select(AdminUser).filter(AdminUser.username == username))
-    db_admin_user = result.scalars().first()
-    if db_admin_user and db_admin_user.check_password(password):
-        return db_admin_user
-    return None
-
-
 async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
     # Check if the ticket is already linked to a consumer
     if not await is_ticket_available(db, ticket_id):
@@ -59,6 +35,30 @@ async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ti
         raise HTTPException(status_code=400, detail="Failed to link ticket to consumer")
 
 
+async def get_all_consumer_ticket_links(db: AsyncSession):
+    result = await db.execute(select(ConsumerTicketLink.id, ConsumerTicketLink.consumer_id, ConsumerTicketLink.ticket_id))
+    return result.all()
+
+
+async def get_consumer_ticket_link_by_id(db: AsyncSession, link_id: int):
+    result = await db.execute(select(ConsumerTicketLink).where(ConsumerTicketLink.id == link_id))
+    return result.scalars().first()
+
+
+async def is_ticket_exists(db: AsyncSession, ticket_id: int):
+    result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    return result.scalars().first() is not None
+
+
+async def delete_consumer_ticket_link(db: AsyncSession, link_id: int):
+    result = await db.execute(select(ConsumerTicketLink).where(ConsumerTicketLink.id == link_id))
+    db_link = result.scalars().first()
+    if db_link:
+        await db.delete(db_link)
+        await db.commit()
+    return db_link
+
+
 async def is_ticket_available(db: AsyncSession, ticket_id: int) -> bool:
     result = await db.execute(select(ConsumerTicketLink).filter(ConsumerTicketLink.ticket_id == ticket_id))
     link = result.scalars().first()
@@ -70,6 +70,17 @@ async def get_consumer_tickets(db: AsyncSession, consumer_id: UUID):
         select(Ticket).join(ConsumerTicketLink).filter(ConsumerTicketLink.consumer_id == consumer_id))
     tickets = result.scalars().all()
     return tickets
+
+
+async def get_consumer_by_email(db: AsyncSession, email: str):
+    result = await db.execute(select(Consumer).filter(Consumer.email == email))
+    return result.scalars().first()
+
+
+async def get_ticket_by_details(db: AsyncSession, event_name: str, row: str, seat: str):
+    result = await db.execute(
+        select(Ticket).filter(Ticket.event_name == event_name, Ticket.row == row, Ticket.seat == seat))
+    return result.scalars().first()
 
 
 # Create Consumer

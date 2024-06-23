@@ -42,18 +42,6 @@ import bcrypt
 #         Boolean, default=False, nullable=False
 #     )
 
-# class AdminUser(Base):
-#     __tablename__ = "admin_user"
-#
-#     id: UUID = Column(UUID_PG(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-#     username: str = Column(String, unique=True, nullable=False)
-#     hashed_password: str = Column(String, nullable=False)
-#
-#     def set_password(self, password: str):
-#         self.hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-#
-#     def check_password(self, password: str) -> bool:
-#         return bcrypt.checkpw(password.encode('utf-8'), self.hashed_password.encode('utf-8'))
 
 class AdminUser(Base):
     __tablename__ = "admin_users"

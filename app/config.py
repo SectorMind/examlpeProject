@@ -1,4 +1,5 @@
-import os
+import secrets
+
 import dotenv
 from dotenv import load_dotenv  # pip install python-dotenv
 
@@ -14,7 +15,12 @@ PORT = env["PORT"]
 DATABASE_NAME = env["DATABASE_NAME"]
 # DRIVER = env["DRIVER"]
 DRIVER = env.get('DRIVER')
+
+SECRET_KEY = env.get('SECRET_KEY')
+ALGORITHM = env.get('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(env.get('ACCESS_TOKEN_EXPIRE_MINUTES'))
+
 DATABASE_URL = f"{DBMS}{f'+{DRIVER}' if DRIVER else ''}://{USER_NAME}:{PASSWORD}@{HOST}/{DATABASE_NAME}"
 
 if __name__ == '__main__':
-    pass
+    print(secrets.token_hex(20))
