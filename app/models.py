@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import relationship
+from sqlalchemy_utils import EmailType
 
 from app.database import Base
 
@@ -46,9 +47,11 @@ import bcrypt
 class AdminUser(Base):
     __tablename__ = "admin_users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    id: UUID = Column(Integer, primary_key=True, index=True)
+    username: str = Column(String, unique=True, nullable=False)
+    hashed_password: str = Column(String(length=1024), nullable=False)
+    phone_number = Column(String, unique=True, nullable=True)  # Nullable column
+    email: str = Column(EmailType, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

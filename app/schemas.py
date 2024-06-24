@@ -1,11 +1,37 @@
 # app/schemas.py
 import enum
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime
 
+
+# admin ==================
+class AdminUserBase(BaseModel):
+    username: str
+    email: EmailStr
+    is_active: bool = True
+
+
+class AdminUserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    is_active: bool
+    hashed_password: str
+    phone_number: str or None = None
+
+
+class AdminUserUpdate(AdminUserBase):
+    hashed_password: Optional[str] = None
+
+
+class AdminUser(AdminUserBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True
+# =============================
 
 class UserCreate(BaseModel):
     username: str

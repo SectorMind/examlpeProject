@@ -1,3 +1,4 @@
+# app/config.py
 import secrets
 
 import dotenv

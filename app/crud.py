@@ -11,10 +11,56 @@ from sqlalchemy.future import select
 
 from app.models import Consumer, Ticket, ConsumerTicketLink, AdminUser  # , Event
 from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, \
-    ConsumerTicketLink as ConsumerTicketLinkSchema
+    ConsumerTicketLink as ConsumerTicketLinkSchema, AdminUserCreate
+from app.utils import get_password_hash
+
 from uuid import uuid4, UUID
 from datetime import datetime
 
+
+# admin ====================
+async def get_admin_user_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(AdminUser).where(AdminUser.username == username))
+    return result.scalars().first()
+
+
+async def create_admin_user(db: AsyncSession, admin_user: AdminUserCreate):
+    # Validate admin_user and ensure phone_number is provided
+    if not admin_user.phone_number:
+        raise HTTPException(status_code=400, detail="Phone number is required for admin user creation")
+
+    hashed_password = get_password_hash(admin_user.hashed_password)
+    db_admin_user = AdminUser(username=admin_user.username, hashed_password=hashed_password,
+                              email=admin_user.email, phone_number=admin_user.phone_number)
+    db.add(db_admin_user)
+    await db.commit()
+    await db.refresh(db_admin_user)
+    return db_admin_user
+
+
+async def get_admin_user(db: AsyncSession, user_id: UUID):
+    result = await db.execute(select(AdminUser).where(AdminUser.id == user_id))
+    return result.scalars().first()
+
+
+async def update_admin_user(db: AsyncSession, user_id: UUID, **kwargs):
+    db_admin_user = await get_admin_user(db=db, user_id=user_id)
+    if not db_admin_user:
+        return None
+    for key, value in kwargs.items():
+        setattr(db_admin_user, key, value)
+    await db.commit()
+    await db.refresh(db_admin_user)
+    return db_admin_user
+
+
+async def delete_admin_user(db: AsyncSession, user_id: UUID):
+    db_admin_user = await get_admin_user(db=db, user_id=user_id)
+    if db_admin_user:
+        await db.delete(db_admin_user)
+        await db.commit()
+    return db_admin_user
+#=============================
 
 async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
     # Check if the ticket is already linked to a consumer
@@ -36,7 +82,8 @@ async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ti
 
 
 async def get_all_consumer_ticket_links(db: AsyncSession):
-    result = await db.execute(select(ConsumerTicketLink.id, ConsumerTicketLink.consumer_id, ConsumerTicketLink.ticket_id))
+    result = await db.execute(
+        select(ConsumerTicketLink.id, ConsumerTicketLink.consumer_id, ConsumerTicketLink.ticket_id))
     return result.all()
 
 
