@@ -1,10 +1,16 @@
 # app/schemas.py
-import enum
+from enum import Enum
 from uuid import UUID
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime
+
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    VIEWER = "viewer"
 
 
 # admin ==================
@@ -17,6 +23,7 @@ class AdminUserBase(BaseModel):
 class AdminUserCreate(AdminUserBase):
     hashed_password: str
     phone_number: Optional[str] = None
+    role: UserRole = UserRole.VIEWER
 
 
 class AdminUserUpdate(AdminUserBase):
@@ -25,7 +32,8 @@ class AdminUserUpdate(AdminUserBase):
 
 
 class AdminUser(AdminUserBase):
-    id: int  # Use int here since the model id is an integer
+    id: UUID
+    role: UserRole
     phone_number: Optional[str] = None
 
     class Config:

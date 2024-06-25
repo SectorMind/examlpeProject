@@ -6,6 +6,7 @@ from sqlalchemy_utils import EmailType
 
 from app.database import Base
 
+from enum import Enum
 from datetime import datetime
 import uuid
 import bcrypt
@@ -44,16 +45,22 @@ import bcrypt
 #     )
 
 
+class UserRole(Enum):
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    VIEWER = "viewer"
+
 class AdminUser(Base):
     __tablename__ = "admin_users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, nullable=False)
-    hashed_password = Column(String(length=1024), nullable=False)
-    phone_number = Column(String, unique=True, nullable=True)  # Nullable column
-    email = Column(EmailType, nullable=False)
+    id: UUID = Column(Integer, primary_key=True, index=True)
+    username: str = Column(String, unique=True, nullable=False)
+    hashed_password: str = Column(String(length=1024), nullable=False)
+    phone_number: str = Column(String, unique=True, nullable=True)  # Nullable column
+    email: str = Column(EmailType, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    role = Column(Enum(UserRole), default=UserRole.VIEWER, nullable=False)
 
 
 class ConsumerTicketLink(Base):
