@@ -14,23 +14,28 @@ class AdminUserBase(BaseModel):
     is_active: bool = True
 
 
-class AdminUserCreate(BaseModel):
-    username: str
-    email: EmailStr
-    is_active: bool
+class AdminUserCreate(AdminUserBase):
     hashed_password: str
-    phone_number: str or None = None
+    phone_number: Optional[str] = None
 
 
 class AdminUserUpdate(AdminUserBase):
     hashed_password: Optional[str] = None
+    phone_number: Optional[str] = None
 
 
 class AdminUser(AdminUserBase):
-    id: UUID
+    id: int  # Use int here since the model id is an integer
+    phone_number: Optional[str] = None
 
     class Config:
         orm_mode = True
+
+
+class AdminUserListResponse(BaseModel):
+    admins: List[AdminUser]
+
+
 # =============================
 
 class UserCreate(BaseModel):
