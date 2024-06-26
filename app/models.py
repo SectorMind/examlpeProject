@@ -1,5 +1,5 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint, Boolean, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import EmailType
@@ -50,6 +50,7 @@ class UserRole(Enum):
     MODERATOR = "moderator"
     VIEWER = "viewer"
 
+
 class AdminUser(Base):
     __tablename__ = "admin_users"
 
@@ -57,10 +58,10 @@ class AdminUser(Base):
     username: str = Column(String, unique=True, nullable=False)
     hashed_password: str = Column(String(length=1024), nullable=False)
     phone_number: str = Column(String, unique=True, nullable=True)  # Nullable column
-    email: str = Column(EmailType, nullable=False)
-    is_active = Column(Boolean, default=True)
+    email: str = Column(String, nullable=False)
+    is_active: bool = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    role = Column(Enum(UserRole), default=UserRole.VIEWER, nullable=False)
+    role = Column(SQLEnum(UserRole, name="UserRole"), default=UserRole.VIEWER, nullable=False)
 
 
 class ConsumerTicketLink(Base):

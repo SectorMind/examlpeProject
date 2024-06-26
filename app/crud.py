@@ -18,8 +18,6 @@ from uuid import uuid4, UUID
 from datetime import datetime
 
 
-
-
 # admin ====================
 async def get_admin_user_by_username(db: AsyncSession, username: str):
     result = await db.execute(select(AdminUser).where(AdminUser.username == username))
@@ -35,7 +33,8 @@ async def create_admin_user(db: AsyncSession, admin_user: AdminUserCreate):
         username=admin_user.username,
         hashed_password=hashed_password,
         email=admin_user.email,
-        phone_number=admin_user.phone_number
+        phone_number=admin_user.phone_number,
+        role=admin_user.role
     )
     db.add(db_admin_user)
     await db.commit()

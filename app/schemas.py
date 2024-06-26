@@ -7,23 +7,27 @@ import uuid
 from datetime import datetime
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class UserRole(str, Enum):
     ADMIN = "admin"
     MODERATOR = "moderator"
     VIEWER = "viewer"
 
 
-# admin ==================
 class AdminUserBase(BaseModel):
     username: str
     email: EmailStr
     is_active: bool = True
+    role: UserRole = UserRole.VIEWER
 
 
 class AdminUserCreate(AdminUserBase):
     hashed_password: str
     phone_number: Optional[str] = None
-    role: UserRole = UserRole.VIEWER
 
 
 class AdminUserUpdate(AdminUserBase):
@@ -33,7 +37,6 @@ class AdminUserUpdate(AdminUserBase):
 
 class AdminUser(AdminUserBase):
     id: UUID
-    role: UserRole
     phone_number: Optional[str] = None
 
     class Config:
@@ -43,8 +46,6 @@ class AdminUser(AdminUserBase):
 class AdminUserListResponse(BaseModel):
     admins: List[AdminUser]
 
-
-# =============================
 
 class UserCreate(BaseModel):
     username: str
@@ -136,3 +137,7 @@ class EventHallLink(BaseModel):
 if __name__ == '__main__':
     your_uuid = uuid.uuid4()
     print(str(your_uuid))
+    from datetime import datetime
+
+    timestamp = datetime(2024, 6, 26, 19, 18, 4, 288531)
+    print(timestamp)

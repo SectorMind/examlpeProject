@@ -1,8 +1,6 @@
 # app/routers/admin_user.py
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.database import get_async_session
 from app import crud
 from app.schemas import AdminUserCreate, AdminUserUpdate, AdminUser as AdminUserSchema
@@ -17,16 +15,11 @@ router = APIRouter()
 
 @router.post("/admin_users/", response_model=AdminUserSchema, dependencies=[Depends(get_current_active_admin_user)])
 async def create_admin_user(admin_user: AdminUserCreate, db: AsyncSession = Depends(get_async_session)):
-    # Check if user already exists
     db_admin_user = await crud.get_admin_user_by_username(db, username=admin_user.username)
     if db_admin_user:
         raise HTTPException(status_code=400, detail="Username already registered")
 
-    # Hash the password before saving it to the database
-    hashed_password = get_password_hash(admin_user.hashed_password)
-    admin_user.hashed_password = hashed_password
-
-    # Create the admin user
+    admin_user.hashed_password = get_password_hash(admin_user.hashed_password)
     db_admin_user = await crud.create_admin_user(db=db, admin_user=admin_user)
     return db_admin_user
 

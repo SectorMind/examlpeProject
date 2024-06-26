@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 # from app.database import Base, engine
-from app.routers import consumer, event, ticket, consumer_ticket_link, admin_user
+from app.routers import consumer, event, ticket, consumer_ticket_link, admin_user, auth
 # from app.admin import app as admin_app
 
 
@@ -31,3 +31,4 @@ app.include_router(consumer_ticket_link.router, prefix="/api/v1")
 app.include_router(event.router, prefix="/api/v1")
 app.include_router(ticket.router, prefix="/api/v1")
 app.include_router(admin_user.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
