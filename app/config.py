@@ -16,6 +16,7 @@ PORT = env["PORT"]
 DATABASE_NAME = env["DATABASE_NAME"]
 # DRIVER = env["DRIVER"]
 DRIVER = env.get('DRIVER')
+TOKEN = env.get('TOKEN')
 
 SECRET_KEY = env.get('SECRET_KEY')
 ALGORITHM = env.get('ALGORITHM')

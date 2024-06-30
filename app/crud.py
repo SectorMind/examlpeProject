@@ -9,72 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
-from app.models import Consumer, Ticket, ConsumerTicketLink, AdminUser  # , Event
+from app.models import Consumer, Ticket, ConsumerTicketLink  # , Event
 from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, \
-    ConsumerTicketLink as ConsumerTicketLinkSchema, AdminUserCreate, AdminUserUpdate
+    ConsumerTicketLink as ConsumerTicketLinkSchema
 from app.utils import get_password_hash
 
 from uuid import uuid4, UUID
 from datetime import datetime
 
-
-# admin ====================
-async def get_admin_user_by_username(db: AsyncSession, username: str):
-    result = await db.execute(select(AdminUser).where(AdminUser.username == username))
-    return result.scalars().first()
-
-
-async def create_admin_user(db: AsyncSession, admin_user: AdminUserCreate):
-    if not admin_user.phone_number:
-        raise HTTPException(status_code=400, detail="Phone number is required for admin user creation")
-
-    hashed_password = get_password_hash(admin_user.hashed_password)
-    db_admin_user = AdminUser(
-        username=admin_user.username,
-        hashed_password=hashed_password,
-        email=admin_user.email,
-        phone_number=admin_user.phone_number,
-        role=admin_user.role
-    )
-    db.add(db_admin_user)
-    await db.commit()
-    await db.refresh(db_admin_user)
-    return db_admin_user
-
-
-async def get_admin_user(db: AsyncSession, user_id: int):
-    result = await db.execute(select(AdminUser).where(AdminUser.id == user_id))
-    return result.scalars().first()
-
-
-async def get_all_admin_users(db: AsyncSession):
-    result = await db.execute(select(AdminUser))
-    return result.scalars().all()
-
-
-async def update_admin_user(db: AsyncSession, user_id: int, admin_user_update: AdminUserUpdate):
-    db_admin_user = await get_admin_user(db=db, user_id=user_id)
-    if not db_admin_user:
-        return None
-    if admin_user_update.hashed_password:
-        admin_user_update.hashed_password = get_password_hash(admin_user_update.hashed_password)
-    update_data = admin_user_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_admin_user, key, value)
-    await db.commit()
-    await db.refresh(db_admin_user)
-    return db_admin_user
-
-
-async def delete_admin_user(db: AsyncSession, user_id: int):
-    db_admin_user = await get_admin_user(db=db, user_id=user_id)
-    if db_admin_user:
-        await db.delete(db_admin_user)
-        await db.commit()
-    return db_admin_user
-
-
-# =============================
 
 async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ticket_id: int):
     # Check if the ticket is already linked to a consumer

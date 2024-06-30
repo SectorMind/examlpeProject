@@ -6,10 +6,7 @@ from typing import List, Optional
 import uuid
 from datetime import datetime
 
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+from fastapi_users.schemas import BaseUserCreate, BaseUser, BaseUserUpdate
 
 
 class UserRole(str, Enum):
@@ -17,41 +14,47 @@ class UserRole(str, Enum):
     MODERATOR = "moderator"
     VIEWER = "viewer"
 
-
-class AdminUserBase(BaseModel):
-    username: str
-    email: EmailStr
-    is_active: bool = True
-    role: UserRole = UserRole.VIEWER
+    class Config:
+        use_enum_values = True
+        orm_mode = True
 
 
-class AdminUserCreate(AdminUserBase):
-    hashed_password: str
-    phone_number: Optional[str] = None
-
-
-class AdminUserUpdate(AdminUserBase):
-    hashed_password: Optional[str] = None
-    phone_number: Optional[str] = None
-
-
-class AdminUser(AdminUserBase):
+class UserRead(BaseUser[UUID]):
     id: UUID
-    phone_number: Optional[str] = None
+    user_name: str
+    email: EmailStr
+    phone_number: Optional[str]
+    role: UserRole
+    is_active: bool
+    is_superuser: bool
+    is_verified: bool
 
     class Config:
         orm_mode = True
 
 
-class AdminUserListResponse(BaseModel):
-    admins: List[AdminUser]
+class UserCreate(BaseUserCreate):
+    id: UUID
+    user_name: str
+    hashed_password: str
+    email: EmailStr
+    phone_number: Optional[str]
+    role: UserRole
+    created_at: datetime
+    is_active: Optional[bool] = True
+    is_superuser: Optional[bool] = False
+    is_verified: Optional[bool] = False
 
 
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    email: str
-    full_name: str
+class UserUpdate(BaseUserUpdate):
+    user_name: Optional[str] = None
+    hashed_password: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+    is_verified: Optional[bool] = None
 
 
 class Consumer(BaseModel):

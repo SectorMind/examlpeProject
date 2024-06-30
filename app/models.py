@@ -1,67 +1,57 @@
 # app/models.py
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, UUID_ID, GUID
 from sqlalchemy import Column, Integer, String, DateTime, UUID, ForeignKey, UniqueConstraint, Boolean, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID as UUID_PG
-from sqlalchemy.orm import relationship
-from sqlalchemy_utils import EmailType
+from sqlalchemy.dialects.postgresql import UUID as UUID_PG, ENUM
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy_utils import EmailType, PhoneNumberType
 
 from app.database import Base
 
-from enum import Enum
+import enum
 from datetime import datetime
 import uuid
 import bcrypt
 
 
-# for create tables to database
-# from sqlalchemy.orm import declarative_base
-# Base = declarative_base()
-
-# class User(SQLAlchemyBaseUserTableUUID, Base):
-#     __tablename__ = "user"
-#
-#     id: Mapped[UUID_ID] = mapped_column(
-#         GUID, primary_key=True, default=uuid.uuid4
-#     )
-#     user_name: Mapped[str] = mapped_column(
-#         String(length=255), unique=True, nullable=False
-#     )
-#     email: Mapped[str] = mapped_column(
-#         EmailType(), unique=True, index=True, nullable=False
-#     )
-#     phone_number: Mapped[str] = mapped_column(
-#         PhoneNumberType(region="RU"), unique=True, nullable=True,
-#     )
-#     hashed_password: Mapped[str] = mapped_column(
-#         String(length=1024), nullable=False
-#     )
-#     is_active: Mapped[bool] = mapped_column(
-#         Boolean, default=True, nullable=False
-#     )
-#     is_superuser: Mapped[bool] = mapped_column(
-#         Boolean, default=False, nullable=False
-#     )
-#     is_verified: Mapped[bool] = mapped_column(
-#         Boolean, default=False, nullable=False
-#     )
-
-
-class UserRole(Enum):
+class UserRole(str, enum.Enum):
     ADMIN = "admin"
     MODERATOR = "moderator"
     VIEWER = "viewer"
 
 
-class AdminUser(Base):
-    __tablename__ = "admin_users"
+class User(SQLAlchemyBaseUserTableUUID, Base):
+    __tablename__ = "user"
 
-    id: UUID = Column(Integer, primary_key=True, index=True)
-    username: str = Column(String, unique=True, nullable=False)
-    hashed_password: str = Column(String(length=1024), nullable=False)
-    phone_number: str = Column(String, unique=True, nullable=True)  # Nullable column
-    email: str = Column(String, nullable=False)
-    is_active: bool = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    role = Column(SQLEnum(UserRole, name="UserRole"), default=UserRole.VIEWER, nullable=False)
+    id: Mapped[UUID_ID] = mapped_column(
+        GUID, primary_key=True, default=uuid.uuid4
+    )
+    user_name: Mapped[str] = mapped_column(
+        String(length=255), unique=True, nullable=False
+    )
+    hashed_password: Mapped[str] = mapped_column(
+        String(length=1024), nullable=False
+    )
+    email: Mapped[str] = mapped_column(
+        EmailType(), unique=True, index=True, nullable=False
+    )
+    phone_number: Mapped[PhoneNumberType] = mapped_column(
+        PhoneNumberType(region="RU"), unique=True, nullable=True
+    )
+    role: Mapped[UserRole] = mapped_column(
+        ENUM(UserRole), default=UserRole.VIEWER
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    is_verified: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
 
 
 class ConsumerTicketLink(Base):
@@ -136,4 +126,5 @@ class Ticket(Base):
 
 
 if __name__ == '__main__':
-    pass
+    time_4 = datetime.utcnow()
+    print(time_4)

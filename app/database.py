@@ -5,8 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from .config import DATABASE_URL
-# from config import DATABASE_URL  # for create tables in db
+# from .config import DATABASE_URL
+from app.config import DATABASE_URL  # for create tables in db
 
 # from models import ConsumerTicketLink, Consumer, Ticket, Base
 
