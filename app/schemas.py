@@ -10,9 +10,7 @@ from fastapi_users.schemas import BaseUserCreate, BaseUser, BaseUserUpdate
 
 
 class UserRole(str, Enum):
-    ADMIN = "admin"
-    MODERATOR = "moderator"
-    VIEWER = "viewer"
+    role: Enum
 
     class Config:
         use_enum_values = True
