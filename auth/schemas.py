@@ -8,8 +8,15 @@ from pydantic import EmailStr, BaseModel
 from enum import Enum
 
 
-class UserRole():
-    pass
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    VIEWER = "viewer"
 
 
 class UserRead(BaseUser[UUID]):

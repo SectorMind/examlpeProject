@@ -1,25 +1,31 @@
+# auth/manager.py
+import os
 from typing import Optional
+from uuid import UUID
 
 from fastapi import Depends, Request
-from fastapi_users import BaseUserManager, IntegerIDMixin, exceptions, models, schemas
+from fastapi_users import BaseUserManager, exceptions, models, schemas, UUIDIDMixin
+from auth.models import User, UserRole
+from app.utils import get_password_hash
+from app.database import get_async_session
 
-from app.database import User, get_user_db
-
-SECRET = "SECRET"
+SECRET = os.getenv("SECRET_KEY", "default_secret")
 
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
+class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        print(f"User {user.id} has registered.")
+        # Use logging instead of print for better practice
+        import logging
+        logging.info(f"User {user.id} has registered.")
 
     async def create(
-        self,
-        user_create: schemas.UC,
-        safe: bool = False,
-        request: Optional[Request] = None,
+            self,
+            user_create: schemas.UC,
+            safe: bool = False,
+            request: Optional[Request] = None,
     ) -> models.UP:
         await self.validate_password(user_create.password, user_create)
 
@@ -33,8 +39,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
             else user_create.create_update_dict_superuser()
         )
         password = user_dict.pop("password")
-        user_dict["hashed_password"] = self.password_helper.hash(password)
-        user_dict["role_id"] = 1
+        user_dict["hashed_password"] = get_password_hash(password)
+        user_dict["role"] = UserRole.VIEWER  # or assign based on logic
 
         created_user = await self.user_db.create(user_dict)
 
@@ -43,5 +49,5 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         return created_user
 
 
-async def get_user_manager(user_db=Depends(get_user_db)):
+async def get_user_manager(user_db=Depends(get_async_session)):
     yield UserManager(user_db)
