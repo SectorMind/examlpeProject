@@ -9,7 +9,7 @@ from typing import Optional
 
 from app.database import get_async_session
 from auth import crud, schemas
-from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, TOKEN
+from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.utils import verify_password
 
 router = APIRouter()
@@ -28,10 +28,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-@router.post("/token", response_model=TOKEN)
+@router.post("/token", response_model=schemas.Token)  # Ensure correct response model
 async def login_for_access_token(db: AsyncSession = Depends(get_async_session),
                                  form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await crud.get_user_by_username(db, user_name=form_data.username)
+    user = await crud.get_user_by_username(user_name=form_data.username, db=db)  # Fix argument order
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

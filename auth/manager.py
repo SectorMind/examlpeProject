@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, IntegerIDMixin, exceptions, models, schemas
 
-from app.database import User, get_user_db
+from auth.models import User
+from app.database import get_async_session
 
 SECRET = "SECRET"
 
@@ -43,5 +44,5 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         return created_user
 
 
-async def get_user_manager(user_db=Depends(get_user_db)):
+async def get_user_manager(user_db=Depends(get_async_session)):
     yield UserManager(user_db)
