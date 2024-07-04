@@ -7,6 +7,7 @@ from typing import List
 from app import crud, schemas
 from app.database import get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.dependencies import get_current_active_user, get_current_active_moderator_user, get_current_active_admin_user
 
 router = APIRouter()
 

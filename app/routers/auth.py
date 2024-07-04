@@ -14,7 +14,7 @@ from app.utils import verify_password
 
 router = APIRouter()
 
-cookie_transport = CookieTransport(cookie_name='ticket', cookie_max_age=3600)
+cookie_transport = CookieTransport(cookie_name='pay_ticket', cookie_max_age=3600)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -28,10 +28,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-@router.post("/token", response_model=schemas.Token)  # Ensure correct response model
+@router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(db: AsyncSession = Depends(get_async_session),
                                  form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await crud.get_user_by_username(user_name=form_data.username, db=db)  # Fix argument order
+    user = await crud.get_user_by_username(user_name=form_data.username, db=db)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

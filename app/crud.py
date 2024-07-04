@@ -9,9 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
-from app.models import Consumer, Ticket, ConsumerTicketLink  # , Event
+from app.models import Consumer, Ticket, ConsumerTicketLink, Event
 from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, \
-    ConsumerTicketLink as ConsumerTicketLinkSchema
+    ConsumerTicketLink as ConsumerTicketLinkSchema, Event as EventSchema
 from app.utils import get_password_hash
 
 from uuid import uuid4, UUID
@@ -86,7 +86,7 @@ async def get_ticket_by_details(db: AsyncSession, event_name: str, row: str, sea
     return result.scalars().first()
 
 
-# Create Consumer
+# Consumer
 async def create_consumer(db: AsyncSession, consumer: ConsumerSchema):
     db_consumer = Consumer(
         id=uuid4(),
@@ -194,20 +194,26 @@ async def delete_ticket(db: AsyncSession, ticket_id: int):
         await db.commit()
     return db_ticket
 
-# async def create_event(db: AsyncSession, event: Event):
-#     db_event = Event(
-#         id=uuid4(),
-#         name=event.name,
-#         date=event.date,
-#         location=event.location,
-#     )
-#     db.add(db_event)
-#     await db.commit()
-#     await db.refresh(db_event)
-#     return db_event
-#
-#
-# async def get_events(db: AsyncSession):
-#     result = await db.execute(select(Event))
-#     events = result.scalars().all()
-#     return events
+
+def make_naive(dt: datetime) -> datetime:
+    if dt.tzinfo is not None:
+        return dt.replace(tzinfo=None)
+    return dt
+
+
+async def create_event(db: AsyncSession, event: EventSchema):
+    db_event = Event(
+        event_name=event.event_name,
+        date=make_naive(event.date),
+        location=event.location
+    )
+    db.add(db_event)
+    await db.commit()
+    await db.refresh(db_event)
+    return db_event
+
+
+async def get_events(db: AsyncSession):
+    result = await db.execute(select(Event))
+    events = result.scalars().all()
+    return events
