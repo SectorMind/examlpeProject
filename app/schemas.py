@@ -3,8 +3,11 @@ from enum import Enum
 from uuid import UUID
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
+from decimal import Decimal
 import uuid
 from datetime import datetime
+
+from app.models import TicketStatus
 
 
 class Consumer(BaseModel):
@@ -18,11 +21,36 @@ class Consumer(BaseModel):
         orm_mode = True
 
 
+class TicketCategoryEnum(str, Enum):
+    PREMIUM = "premium"
+    PREMIUM1 = "premium-1"
+    PREMIUM2 = "premium-2"
+    BUSINESS = "business"
+    BUSINESS1 = "business-1"
+    BUSINESS2 = "business-2"
+    VIP = "vip"
+    VIP1 = "vip-1"
+    VIP2 = "vip-2"
+    STANDARD = "standard"
+    STANDARD1 = "standard-1"
+    STANDARD2 = "standard-2"
+
+
+class TicketCategory(BaseModel):
+    id: int
+    category: TicketCategoryEnum
+    price: Decimal
+
+    class Config:
+        orm_mode = True
+
+
 class Ticket(BaseModel):
     id: int
     event_name: str
     row: str
     seat: str
+    category: TicketCategory
     created_at: datetime = datetime.utcnow()
     updated_at: datetime = datetime.utcnow()
 
@@ -34,6 +62,9 @@ class ConsumerTicketLink(BaseModel):
     id: int
     consumer_id: UUID
     ticket_id: int
+    status: TicketStatus
+    created_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
 
     class Config:
         orm_mode = True
@@ -42,11 +73,13 @@ class ConsumerTicketLink(BaseModel):
 class ConsumerTicketLinkUpdate(BaseModel):
     consumer_id: Optional[UUID] = None
     ticket_id: Optional[int] = None
+    status: Optional[Enum] = None
 
 
 class PurchasePayload(BaseModel):
     consumer: Consumer
     tickets: List[Ticket]
+    status: TicketStatus
 
 
 class Event(BaseModel):

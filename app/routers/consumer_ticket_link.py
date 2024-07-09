@@ -11,7 +11,7 @@ from app.database import get_async_session
 router = APIRouter()
 
 
-@router.post("/purchase_tickets/", response_model=List[schemas.ConsumerTicketLink])
+@router.post("/reserve_tickets/", response_model=List[schemas.ConsumerTicketLink])
 async def purchase_tickets(
         payload: schemas.PurchasePayload,
         db: AsyncSession = Depends(get_async_session)
@@ -43,12 +43,20 @@ async def purchase_tickets(
     return db_links
 
 
-@router.get("/purchase_tickets/", response_model=List[schemas.Ticket])
-async def get_purchase_tickets(db: AsyncSession = Depends(get_async_session)):
+@router.get("/purchased_tickets/", response_model=List[schemas.Ticket])
+async def get_purchased_tickets(db: AsyncSession = Depends(get_async_session)):
     purchased_tickets = await crud.get_purchased_tickets(db=db)
     if not purchased_tickets:
-        raise HTTPException(status_code=404, detail="No tickets found for the consumer")
+        raise HTTPException(status_code=404, detail="No purchased tickets found")
     return purchased_tickets
+
+
+@router.get("/reserved_tickets/", response_model=List[schemas.Ticket])
+async def get_reserved_tickets(db: AsyncSession = Depends(get_async_session)):
+    reserved_tickets = await crud.get_reserve_tickets(db=db)
+    if not reserved_tickets:
+        raise HTTPException(status_code=404, detail="No reserved tickets found")
+    return reserved_tickets
 
 
 @router.post("/link_ticket_to_consumer/", response_model=schemas.ConsumerTicketLink)
@@ -68,9 +76,7 @@ async def get_consumer_tickets(consumer_id: UUID, db: AsyncSession = Depends(get
 
 
 @router.get("/consumer_ticket_link/", response_model=List[schemas.ConsumerTicketLink])
-async def get_all_consumer_ticket_links(
-    db: AsyncSession = Depends(get_async_session)
-):
+async def get_all_consumer_ticket_links(db: AsyncSession = Depends(get_async_session)):
     links = await crud.get_all_consumer_ticket_links(db=db)
     return links
 

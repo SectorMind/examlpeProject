@@ -8,10 +8,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
+from sqlalchemy import update
 
-from app.models import Consumer, Ticket, ConsumerTicketLink, Event
-from app.schemas import Consumer as ConsumerSchema, Ticket as TicketSchema, \
-    ConsumerTicketLink as ConsumerTicketLinkSchema, Event as EventSchema
+from app.models import Consumer, Ticket, TicketCategory, TicketCategoryEnum, ConsumerTicketLink, TicketStatus, Event
+from app.schemas import \
+    Consumer as ConsumerSchema, \
+    Ticket as TicketSchema, \
+    TicketCategory as TicketCategorySchema, \
+    ConsumerTicketLink as ConsumerTicketLinkSchema, \
+    Event as EventSchema
 from app.utils import get_password_hash
 
 from uuid import uuid4, UUID
@@ -26,6 +31,7 @@ async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ti
     db_link = ConsumerTicketLink(
         consumer_id=consumer_id,
         ticket_id=ticket_id,
+        ticket_status=TicketStatus.RESERVE,
     )
     db.add(db_link)
     try:
@@ -39,7 +45,13 @@ async def create_link_ticket_to_consumer(db: AsyncSession, consumer_id: UUID, ti
 
 async def get_all_consumer_ticket_links(db: AsyncSession):
     result = await db.execute(
-        select(ConsumerTicketLink.id, ConsumerTicketLink.consumer_id, ConsumerTicketLink.ticket_id))
+        select(
+            ConsumerTicketLink.id,
+            ConsumerTicketLink.consumer_id,
+            ConsumerTicketLink.ticket_id,
+            ConsumerTicketLink.ticket_status.label('status')
+        )
+    )
     return result.all()
 
 
@@ -129,19 +141,64 @@ async def delete_consumer(db: AsyncSession, consumer_id: UUID):
     return db_consumer
 
 
-# Create Ticket
+async def create_ticket_category(db: AsyncSession, category: TicketCategorySchema):
+    db_category = TicketCategory(
+        category=category.category,
+        price=category.price,
+    )
+    db.add(db_category)
+    await db.commit()
+    await db.refresh(db_category)
+    return db_category
+
+
+async def update_ticket_category(db: AsyncSession, category_id: int, category: TicketCategorySchema):
+    result = await db.execute(select(TicketCategory).filter(TicketCategory.id == category_id))
+    db_category = result.scalars().first()
+    if db_category:
+        db_category.price = category.price
+        await db.commit()
+        await db.refresh(db_category)
+    return db_category
+
+
 async def create_ticket(db: AsyncSession, ticket: TicketSchema):
+    result = await db.execute(select(TicketCategory).filter(TicketCategory.category == ticket.category.category))
+    db_category = result.scalars().first()
+    if not db_category:
+        raise HTTPException(status_code=404, detail=f"Ticket category {ticket.category.category} does not exist")
+
     db_ticket = Ticket(
-        # id=ticket.id,
         event_name=ticket.event_name,
         row=ticket.row,
         seat=ticket.seat,
+        category_id=db_category.id,
         created_at=ticket.created_at,
         updated_at=ticket.updated_at
     )
     db.add(db_ticket)
     await db.commit()
     await db.refresh(db_ticket)
+    return db_ticket
+
+
+async def update_ticket(db: AsyncSession, ticket_id: int, ticket: TicketSchema):
+    result = await db.execute(select(Ticket).filter(Ticket.id == ticket_id))
+    db_ticket = result.scalars().first()
+    if db_ticket:
+        db_category = await db.execute(
+            select(TicketCategory).filter(TicketCategory.category == ticket.category.category))
+        db_category = db_category.scalars().first()
+        if not db_category:
+            raise HTTPException(status_code=404, detail=f"Ticket category {ticket.category.category} does not exist")
+
+        db_ticket.event_name = ticket.event_name
+        db_ticket.row = ticket.row
+        db_ticket.seat = ticket.seat
+        db_ticket.category_id = db_category.id
+        db_ticket.updated_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(db_ticket)
     return db_ticket
 
 
@@ -152,25 +209,54 @@ async def get_tickets(db: AsyncSession):
 
 
 async def get_purchased_tickets(db: AsyncSession):
-    result = await db.execute(select(Ticket).join(ConsumerTicketLink))
+    result = await db.execute(
+        select(Ticket)
+        .join(ConsumerTicketLink, Ticket.id == ConsumerTicketLink.ticket_id)
+        .where(ConsumerTicketLink.ticket_status == TicketStatus.PURCHASED)
+    )
     tickets = result.scalars().all()
     return tickets
 
 
-async def purchase_ticket(db: AsyncSession, consumer_id: UUID, ticket_id: int):
-    # Create a link between the consumer and the ticket
-    db_link = ConsumerTicketLink(
-        consumer_id=consumer_id,
-        ticket_id=ticket_id,
+async def get_reserve_tickets(db: AsyncSession):
+    result = await db.execute(
+        select(Ticket)
+        .join(ConsumerTicketLink, Ticket.id == ConsumerTicketLink.ticket_id)
+        .where(ConsumerTicketLink.ticket_status == TicketStatus.RESERVE)
     )
-    try:
-        db.add(db_link)
+    tickets = result.scalars().all()
+    return tickets
+
+
+# async def purchase_ticket(db: AsyncSession, consumer_id: UUID, ticket_id: int):
+#     # Create a link between the consumer and the ticket
+#     db_link = ConsumerTicketLink(
+#         consumer_id=consumer_id,
+#         ticket_id=ticket_id,
+#     )
+#     try:
+#         db.add(db_link)
+#         await db.commit()
+#         await db.refresh(db_link)
+#         return db_link
+#     except IntegrityError:
+#         await db.rollback()
+#         raise HTTPException(status_code=400, detail="Ticket is already purchased")
+async def confirm_ticket_purchase(db: AsyncSession, link_id: int):
+    result = await db.execute(select(ConsumerTicketLink).where(ConsumerTicketLink.id == link_id))
+    db_link = result.scalars().first()
+    if db_link:
+        stmt = (
+            update(ConsumerTicketLink)
+            .where(ConsumerTicketLink.id == link_id)
+            .values(ticket_status=TicketStatus.PURCHASED)
+        )
+        await db.execute(stmt)
         await db.commit()
         await db.refresh(db_link)
         return db_link
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(status_code=400, detail="Ticket is already purchased")
+    else:
+        raise HTTPException(status_code=404, detail="Link not found")
 
 
 async def update_ticket(db: AsyncSession, ticket_id: int, ticket: TicketSchema):
