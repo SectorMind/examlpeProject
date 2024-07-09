@@ -24,5 +24,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(env.get('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 DATABASE_URL = f"{DBMS}{f'+{DRIVER}' if DRIVER else ''}://{USER_NAME}:{PASSWORD}@{HOST}/{DATABASE_NAME}"
 
+SHOPID = env.get('SHOPID')
+PASSWORD1 = env.get('PASSWORD1')
+PASSWORD2 = env.get('PASSWORD2')
+
 if __name__ == '__main__':
     print(secrets.token_hex(20))

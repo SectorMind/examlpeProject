@@ -40,15 +40,15 @@ async def init_user():
     async with async_session() as session:
         async with session.begin():
             user = User(
-                id=uuid.uuid4(),  # Ensures the user ID is properly initialized
+                id=uuid.uuid4(),
                 user_name="Admin",
                 email="admin@gmail.com",
                 is_active=True,
-                role=UserRole.ADMIN,  # Assign the correct enum value for the role
+                role=UserRole.ADMIN,
                 hashed_password=get_password_hash("1234"),
                 phone_number="+12345678900",
-                is_superuser=True,  # Assuming the first user should be a superuser/admin
-                is_verified=True  # Assuming the first user should be verified
+                is_superuser=False,
+                is_verified=True
             )
             session.add(user)
 

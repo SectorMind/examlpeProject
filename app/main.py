@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from app.routers import consumer, event, ticket, consumer_ticket_link, user, auth
 # from app.admin import app as admin_app
 
-
 import logging
 
 
@@ -15,6 +14,15 @@ logging.basicConfig(
     filename='app.log',  # Log to a file
     filemode='a'  # Append mode
 )
+gunicorn_error_logger = logging.getLogger("gunicorn.error")
+gunicorn_logger = logging.getLogger("gunicorn")
+uvicorn_access_logger = logging.getLogger("uvicorn.access")
+
+uvicorn_access_logger.handlers = gunicorn_error_logger.handlers
+fastapi_logger = logging.getLogger("fastapi")
+fastapi_logger.handlers = gunicorn_error_logger.handlers
+
+fastapi_logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
 
