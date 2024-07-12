@@ -10,17 +10,6 @@ from datetime import datetime
 from app.models import TicketStatus
 
 
-class Consumer(BaseModel):
-    id: UUID
-    name: str
-    surname: str
-    phone_number: str
-    email: str
-
-    class Config:
-        orm_mode = True
-
-
 class TicketCategoryEnum(str, Enum):
     PREMIUM = "premium"
     PREMIUM1 = "premium-1"
@@ -39,24 +28,9 @@ class TicketCategoryEnum(str, Enum):
 class TicketCategory(BaseModel):
     id: int
     category: TicketCategoryEnum
-    price: Decimal
 
     class Config:
         orm_mode = True
-
-
-class Ticket(BaseModel):
-    id: int
-    event_name: str
-    row: str
-    seat: str
-    category: TicketCategory
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
-
-    class Config:
-        orm_mode = True
-
 
 class ConsumerTicketLink(BaseModel):
     id: int
@@ -68,6 +42,57 @@ class ConsumerTicketLink(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Consumer(BaseModel):
+    id: UUID
+    name: str
+    surname: str
+    phone_number: str
+    email: str
+
+    class Config:
+        orm_mode = True
+
+class Ticket(BaseModel):
+    id: int
+    event_id: int
+    row: str
+    seat: str
+    category_id: int
+    created_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
+
+    class Config:
+        orm_mode = True
+
+
+class EventTicketLink(BaseModel):
+    id: int
+    Event_id: int
+    ticket_id: int
+
+    class Config:
+        orm_mode = True
+
+class Event(BaseModel):
+    id: int
+    event_name: str
+    date: datetime
+    city_id: int
+    created_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
+
+    class Config:
+        orm_mode = True
+
+
+class EventTicketCategory(BaseModel):
+    id: int
+    event_id: int
+    category_id: int
+    price: Decimal
+
 
 
 class ConsumerTicketLinkUpdate(BaseModel):
@@ -82,39 +107,39 @@ class PurchasePayload(BaseModel):
     status: TicketStatus
 
 
-class Event(BaseModel):
+class Discount(BaseModel):
     id: int
-    event_name: str
-    date: datetime
-    location: str
+    discount_name: str
+    discount_value: Decimal
+    min_tickets: int
+    start_date: datetime
+    end_date: datetime
 
-    class Config:
-        orm_mode = True
-
-
-class EventTicketLink(BaseModel):
+class PromoCode(BaseModel):
     id: int
-    Event_id: int
-    ticket_id: int
+    code: str
+    discount_value: Decimal
+    max_uses: int
+    start_date: datetime
+    end_date: datetime
 
-    class Config:
-        orm_mode = True
-
-
-class Hall(BaseModel):
-    id: int
-    hall_name: str
-    row: str
-    seat: str
-
-    class Config:
-        orm_mode = True
-
-
-class EventHallLink(BaseModel):
+class EventDiscount(BaseModel):
     id: int
     event_id: int
-    hall_id: int
+    discount_id: int
+    is_cumulative: bool
+
+
+class EventPromoCode(BaseModel):
+    id: int
+    event_id: int
+    promo_code_id: int
+    is_cumulative: bool
+
+
+class City(BaseModel):
+    id: int
+    name: str
 
     class Config:
         orm_mode = True

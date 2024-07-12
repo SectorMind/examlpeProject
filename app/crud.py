@@ -228,6 +228,24 @@ async def get_reserve_tickets(db: AsyncSession):
     return tickets
 
 
+async def get_reserved_ticket_details(db: AsyncSession, consumer_id: UUID):
+    result = await db.execute(
+        select(
+            Ticket.id,
+            Ticket.event_id,
+            Ticket.row,
+            Ticket.seat,
+            Ticket.price,
+            TicketCategory.category,
+            ConsumerTicketLink.ticket_status
+        ).join(Ticket, ConsumerTicketLink.ticket_id == Ticket.id)
+         .join(TicketCategory, Ticket.category_id == TicketCategory.id)
+        .where(ConsumerTicketLink.consumer_id == consumer_id)
+         .where(ConsumerTicketLink.ticket_status == TicketStatus.RESERVE)
+    )
+    tickets = result.all()
+    return tickets
+
 # async def purchase_ticket(db: AsyncSession, consumer_id: UUID, ticket_id: int):
 #     # Create a link between the consumer and the ticket
 #     db_link = ConsumerTicketLink(
