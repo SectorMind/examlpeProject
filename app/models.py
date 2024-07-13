@@ -39,7 +39,6 @@ class TicketCategory(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     category = Column(SQLEnum(TicketCategoryEnum), unique=True, nullable=False)
-    tickets = relationship("Ticket", back_populates="category")
     events = relationship("EventTicketCategory", back_populates="category")
 
 
@@ -74,25 +73,23 @@ class Ticket(Base):
     __tablename__ = "ticket"
 
     id: int = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    event_id: int = Column(Integer, ForeignKey("event.id"))
     row: str = Column(String)
     seat: str = Column(String)
-    category_id: int = Column(Integer, ForeignKey("ticket_category.id"), nullable=False)
+    event_category_id: int = Column(Integer, ForeignKey("event_ticket_category.id"), nullable=False)
     created_at: datetime = Column(DateTime, default=datetime.utcnow)
     updated_at: datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    consumer = relationship("ConsumerTicketLink", back_populates="ticket")
-    events = relationship("EventTicketLink", back_populates="ticket")
-    category = relationship("TicketCategory", back_populates="tickets")
+    consumers = relationship("ConsumerTicketLink", back_populates="ticket")
+    event_category = relationship("EventTicketCategory", back_populates="tickets")
 
 
-class EventTicketLink(Base):
-    __tablename__ = "event_ticket_link"
-
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    event_id: int = Column(Integer, ForeignKey("event.id"))
-    ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
-    event = relationship("Event", back_populates="tickets")
-    ticket = relationship("Ticket", back_populates="events")
+# class EventTicketLink(Base):
+#     __tablename__ = "event_ticket_link"
+#
+#     id: int = Column(Integer, primary_key=True, autoincrement=True)
+#     event_id: int = Column(Integer, ForeignKey("event.id"))
+#     ticket_id: int = Column(Integer, ForeignKey("ticket.id"))
+#     event = relationship("Event", back_populates="tickets")
+#     ticket = relationship("Ticket", back_populates="events")
 
 
 class Event(Base):
@@ -104,10 +101,9 @@ class Event(Base):
     city_id = Column(Integer, ForeignKey("city.id"))
     created_at: datetime = Column(DateTime, default=datetime.utcnow)
     updated_at: datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    tickets = relationship("EventTicketLink", back_populates="event")
-    categories = relationship("EventTicketCategory", back_populates="event")
-    discounts = relationship("EventDiscount", back_populates="event")
-    promo_codes = relationship("EventPromoCode", back_populates="event")
+    categories = relationship("EventTicketCategory", back_populates="event", cascade="all, delete")
+    discounts = relationship("EventDiscount", back_populates="event", cascade="all, delete")
+    promo_codes = relationship("EventPromoCode", back_populates="event", cascade="all, delete")
     city = relationship("City", back_populates="events")
 
 
@@ -120,6 +116,7 @@ class EventTicketCategory(Base):
     price: DECIMAL = Column(DECIMAL(10, 2), nullable=False)
     event = relationship("Event", back_populates="categories")
     category = relationship("TicketCategory", back_populates="events")
+    tickets = relationship("Ticket", back_populates="event_category", cascade="all, delete")
 
     __table_args__ = (UniqueConstraint('event_id', 'category_id', name='uq_event_category'),)
 
@@ -138,8 +135,9 @@ class Discount(Base):
     discount_value: DECIMAL = Column(DECIMAL(10, 2), nullable=False)  # Example: 10.00 means 10% discount
     min_tickets: int = Column(Integer, nullable=True)  # Minimum tickets required to apply discount
     start_date: datetime = Column(DateTime, default=datetime.utcnow, nullable=True)
-    end_date: datetime = Column(DateTime, default=datetime.utcnow() + timedelta(days=365*100), nullable=True)
+    end_date: datetime = Column(DateTime, default=datetime.utcnow() + timedelta(days=365 * 100), nullable=True)
     event_discounts = relationship("EventDiscount", back_populates="discount")
+    categories = relationship("DiscountCategory", back_populates="discount", cascade="all, delete")
 
 
 class PromoCode(Base):
@@ -151,7 +149,7 @@ class PromoCode(Base):
     discount_value: DECIMAL = Column(DECIMAL(10, 2), nullable=False)  # Example: 10.00 means 10% discount
     max_uses: int = Column(Integer, nullable=True)  # Maximum times this promo code can be used
     start_date: datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
-    end_date: datetime = Column(DateTime, default=datetime.utcnow() + timedelta(days=365*100), nullable=False)
+    end_date: datetime = Column(DateTime, default=datetime.utcnow() + timedelta(days=365 * 100), nullable=False)
     event_promo_codes = relationship("EventPromoCode", back_populates="promo_code")
 
 
@@ -179,6 +177,19 @@ class EventPromoCode(Base):
     promo_code = relationship("PromoCode", back_populates="event_promo_codes")
 
     __table_args__ = (UniqueConstraint('event_id', 'promo_code_id', name='uq_event_promo_code'),)
+
+
+class DiscountCategory(Base):
+    __tablename__ = "discount_category"
+
+    discount_id: int = Column(Integer, ForeignKey("discount.id"), primary_key=True)
+    category_id: int = Column(Integer, ForeignKey("ticket_category.id"), primary_key=True)
+    discount = relationship("Discount", back_populates="categories")
+    category = relationship("TicketCategory", back_populates="discounts")
+
+
+Discount.categories = relationship("DiscountCategory", back_populates="discount", cascade="all, delete")
+TicketCategory.discounts = relationship("DiscountCategory", back_populates="category", cascade="all, delete")
 
 
 class City(Base):

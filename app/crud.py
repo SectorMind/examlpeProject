@@ -10,13 +10,17 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy import update
 
-from app.models import Consumer, Ticket, TicketCategory, TicketCategoryEnum, ConsumerTicketLink, TicketStatus, Event
+from app.models import Consumer, Ticket, TicketCategory, TicketCategoryEnum, ConsumerTicketLink, TicketStatus, Event, \
+    City, EventTicketCategory
 from app.schemas import \
     Consumer as ConsumerSchema, \
     Ticket as TicketSchema, \
     TicketCategory as TicketCategorySchema, \
     ConsumerTicketLink as ConsumerTicketLinkSchema, \
-    Event as EventSchema
+    Event as EventSchema, \
+    City as CitySchema, \
+    EventTicketCategory as EventTicketCategorySchema, \
+    EventTicketLink as EventTicketLinkSchema
 from app.utils import get_password_hash
 
 from uuid import uuid4, UUID
@@ -141,10 +145,45 @@ async def delete_consumer(db: AsyncSession, consumer_id: UUID):
     return db_consumer
 
 
+# City
+async def create_city(db: AsyncSession, city: CitySchema):
+    db_city = City(
+        name=city.name,
+    )
+    db.add(db_city)
+    await db.commit()
+    await db.refresh(db_city)
+    return db_city
+
+
+async def get_cities(db: AsyncSession):
+    result = await db.execute(select(City))
+    cities = result.scalars().all()
+    return cities
+
+
+async def update_city(db: AsyncSession, city_id: UUID, city: CitySchema):
+    result = await db.execute(select(City).filter(City.id == city_id))
+    db_city = result.scalars().first()
+    if db_city:
+        db_city.name = city.name
+        await db.commit()
+        await db.refresh(db_city)
+    return db_city
+
+
+async def delete_city(db: AsyncSession, city_id: UUID):
+    result = await db.execute(select(City).filter(City.id == city_id))
+    db_city = result.scalars().first()
+    if db_city:
+        await db.delete(db_city)
+        await db.commit()
+    return db_city
+
+
 async def create_ticket_category(db: AsyncSession, category: TicketCategorySchema):
     db_category = TicketCategory(
-        category=category.category,
-        price=category.price,
+        category=category.category
     )
     db.add(db_category)
     await db.commit()
@@ -153,12 +192,73 @@ async def create_ticket_category(db: AsyncSession, category: TicketCategorySchem
 
 
 async def update_ticket_category(db: AsyncSession, category_id: int, category: TicketCategorySchema):
-    result = await db.execute(select(TicketCategory).filter(TicketCategory.id == category_id))
-    db_category = result.scalars().first()
-    if db_category:
-        db_category.price = category.price
+    query = await db.execute(select(TicketCategory).filter(TicketCategory.id == category_id))
+    db_category = query.scalar_one_or_none()
+
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    db_category.category = category.category
+
+    db.add(db_category)
+    await db.commit()
+    await db.refresh(db_category)
+    return db_category
+
+
+async def create_event_ticket_category(db: AsyncSession, category: EventTicketCategorySchema):
+    db_category = EventTicketCategory(
+        event_id=category.event_id,
+        category_id=category.category_id,
+        price=category.price
+    )
+    db.add(db_category)
+    try:
         await db.commit()
         await db.refresh(db_category)
+        return db_category
+    except IntegrityError:
+        await db.rollback()
+        return None
+
+
+async def get_event_ticket_category(db: AsyncSession, category_id: int):
+    result = await db.execute(select(EventTicketCategory).filter(EventTicketCategory.id == category_id))
+    return result.scalars().first()
+
+
+async def get_event_ticket_categories(db: AsyncSession):
+    result = await db.execute(select(EventTicketCategory))
+    return result.scalars().all()
+
+
+async def update_event_ticket_category(db: AsyncSession, category_id: int, category: EventTicketCategorySchema):
+    result = await db.execute(select(EventTicketCategory).filter(EventTicketCategory.id == category_id))
+    db_category = result.scalars().first()
+    if db_category is None:
+        return None
+
+    db_category.event_id = category.event_id
+    db_category.category_id = category.category_id
+    db_category.price = category.price
+
+    try:
+        await db.commit()
+        await db.refresh(db_category)
+        return db_category
+    except IntegrityError:
+        await db.rollback()
+        return None
+
+
+async def delete_event_ticket_category(db: AsyncSession, category_id: int):
+    result = await db.execute(select(EventTicketCategory).filter(EventTicketCategory.id == category_id))
+    db_category = result.scalars().first()
+    if db_category is None:
+        return None
+
+    await db.delete(db_category)
+    await db.commit()
     return db_category
 
 
@@ -239,12 +339,13 @@ async def get_reserved_ticket_details(db: AsyncSession, consumer_id: UUID):
             TicketCategory.category,
             ConsumerTicketLink.ticket_status
         ).join(Ticket, ConsumerTicketLink.ticket_id == Ticket.id)
-         .join(TicketCategory, Ticket.category_id == TicketCategory.id)
+        .join(TicketCategory, Ticket.category_id == TicketCategory.id)
         .where(ConsumerTicketLink.consumer_id == consumer_id)
-         .where(ConsumerTicketLink.ticket_status == TicketStatus.RESERVE)
+        .where(ConsumerTicketLink.ticket_status == TicketStatus.RESERVE)
     )
     tickets = result.all()
     return tickets
+
 
 # async def purchase_ticket(db: AsyncSession, consumer_id: UUID, ticket_id: int):
 #     # Create a link between the consumer and the ticket
@@ -309,7 +410,7 @@ async def create_event(db: AsyncSession, event: EventSchema):
     db_event = Event(
         event_name=event.event_name,
         date=make_naive(event.date),
-        location=event.location
+        city_id=event.city_id
     )
     db.add(db_event)
     await db.commit()

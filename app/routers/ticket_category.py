@@ -1,3 +1,4 @@
+# app/routers/ticket_category.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas import TicketCategory as TicketCategorySchema

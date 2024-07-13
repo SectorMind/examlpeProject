@@ -3,12 +3,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 # from app.database import Base, engine
-from app.routers import consumer, event, ticket, ticket_category, consumer_ticket_link, user, auth
+from app.routers import consumer, event, city, ticket, ticket_category, consumer_ticket_link, user, auth, \
+    event_ticket_category
 # from app.admin import app as admin_app
 
 import logging
 import time
-
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -28,7 +28,6 @@ logging.basicConfig(
 # logger = logging.getLogger("uvicorn.access")
 
 app = FastAPI()
-
 
 # Middleware to log requests and responses
 # @app.middleware("http")
@@ -56,7 +55,9 @@ app = FastAPI()
 app.include_router(consumer.router, prefix="/api/v1")
 app.include_router(consumer_ticket_link.router, prefix="/api/v1")
 app.include_router(event.router, prefix="/api/v1")
+app.include_router(city.router, prefix="/api/v1")
 app.include_router(ticket.router, prefix="/api/v1")
 app.include_router(user.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(ticket_category.router, prefix="/api/v1")
+app.include_router(event_ticket_category.router, prefix="/api/v1")

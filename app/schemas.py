@@ -2,27 +2,13 @@
 from enum import Enum
 from uuid import UUID
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional
+from sqlalchemy import Enum as SQLEnum
+from typing import List, Optional, Union
 from decimal import Decimal
 import uuid
 from datetime import datetime
 
-from app.models import TicketStatus
-
-
-class TicketCategoryEnum(str, Enum):
-    PREMIUM = "premium"
-    PREMIUM1 = "premium-1"
-    PREMIUM2 = "premium-2"
-    BUSINESS = "business"
-    BUSINESS1 = "business-1"
-    BUSINESS2 = "business-2"
-    VIP = "vip"
-    VIP1 = "vip-1"
-    VIP2 = "vip-2"
-    STANDARD = "standard"
-    STANDARD1 = "standard-1"
-    STANDARD2 = "standard-2"
+from app.models import TicketStatus, DiscountTypeEnum, TicketCategoryEnum
 
 
 class TicketCategory(BaseModel):
@@ -32,13 +18,14 @@ class TicketCategory(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ConsumerTicketLink(BaseModel):
     id: int
     consumer_id: UUID
     ticket_id: int
-    status: TicketStatus
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    status: Union[str, TicketStatus]
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -54,14 +41,22 @@ class Consumer(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Ticket(BaseModel):
     id: int
     event_id: int
     row: str
     seat: str
     category_id: int
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class TicketCreateList(BaseModel):
+    tickets: List[Ticket]
 
     class Config:
         orm_mode = True
@@ -75,13 +70,14 @@ class EventTicketLink(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Event(BaseModel):
     id: int
     event_name: str
     date: datetime
     city_id: int
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -93,6 +89,8 @@ class EventTicketCategory(BaseModel):
     category_id: int
     price: Decimal
 
+    class Config:
+        orm_mode = True
 
 
 class ConsumerTicketLinkUpdate(BaseModel):
@@ -110,18 +108,28 @@ class PurchasePayload(BaseModel):
 class Discount(BaseModel):
     id: int
     discount_name: str
+    discount_type: Union[str, DiscountTypeEnum]
     discount_value: Decimal
     min_tickets: int
     start_date: datetime
     end_date: datetime
 
+    class Config:
+        orm_mode = True
+
+
 class PromoCode(BaseModel):
     id: int
     code: str
+    discount_type: Union[str, DiscountTypeEnum]
     discount_value: Decimal
     max_uses: int
     start_date: datetime
     end_date: datetime
+
+    class Config:
+        orm_mode = True
+
 
 class EventDiscount(BaseModel):
     id: int
@@ -129,12 +137,18 @@ class EventDiscount(BaseModel):
     discount_id: int
     is_cumulative: bool
 
+    class Config:
+        orm_mode = True
+
 
 class EventPromoCode(BaseModel):
     id: int
     event_id: int
     promo_code_id: int
     is_cumulative: bool
+
+    class Config:
+        orm_mode = True
 
 
 class City(BaseModel):
