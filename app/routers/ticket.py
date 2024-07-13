@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app import crud, schemas
 from app.database import get_async_session
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_active_user, get_current_active_moderator_user, get_current_active_admin_user
 from app.models import Ticket, EventTicketCategory, TicketCategory, PromoCode, DiscountTypeEnum
 
@@ -39,20 +41,21 @@ async def get_tickets(db: AsyncSession = Depends(get_async_session)):
 
 
 @router.get("/tickets/{ticket_id}")
-def get_ticket(ticket_id: int, db: Depends(get_async_session)):
+async def get_ticket(ticket_id: int, db: AsyncSession = Depends(get_async_session)):
     # Fetch the ticket
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    ticket = (await db.execute(select(Ticket).filter(Ticket.id == ticket_id))).scalars().first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
     # Fetch the event ticket category
-    event_ticket_category = db.query(EventTicketCategory).filter(
-        EventTicketCategory.id == ticket.event_category_id).first()
+    event_ticket_category = (await db.execute(select(EventTicketCategory).filter(
+        EventTicketCategory.id == ticket.event_category_id))).scalars().first()
     if not event_ticket_category:
         raise HTTPException(status_code=404, detail="Event Ticket Category not found")
 
     # Fetch the ticket category
-    ticket_category = db.query(TicketCategory).filter(TicketCategory.id == event_ticket_category.category_id).first()
+    ticket_category = (await db.execute(select(TicketCategory).filter(
+        TicketCategory.id == event_ticket_category.category_id))).scalars().first()
     if not ticket_category:
         raise HTTPException(status_code=404, detail="Ticket Category not found")
 
@@ -66,17 +69,17 @@ def get_ticket(ticket_id: int, db: Depends(get_async_session)):
 
 
 @router.post("/tickets/{ticket_id}/apply_promo_code")
-def apply_promo_code(ticket_id: int, promo_code: str, db: Depends(get_async_session)):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+async def apply_promo_code(ticket_id: int, promo_code: str, db: AsyncSession = Depends(get_async_session)):
+    ticket = (await db.execute(select(Ticket).filter(Ticket.id == ticket_id))).scalars().first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    event_ticket_category = db.query(EventTicketCategory).filter(
-        EventTicketCategory.id == ticket.event_category_id).first()
+    event_ticket_category = (await db.execute(select(EventTicketCategory).filter(
+        EventTicketCategory.id == ticket.event_category_id))).scalars().first()
     if not event_ticket_category:
         raise HTTPException(status_code=404, detail="Event Ticket Category not found")
 
-    promo = db.query(PromoCode).filter(PromoCode.code == promo_code).first()
+    promo = (await db.execute(select(PromoCode).filter(PromoCode.code == promo_code))).scalars().first()
     if not promo:
         raise HTTPException(status_code=404, detail="Promo code not found")
 
