@@ -1,4 +1,5 @@
 # app/config.py
+import os
 import secrets
 
 import dotenv
@@ -6,7 +7,13 @@ from dotenv import load_dotenv  # pip install python-dotenv
 
 load_dotenv()
 
-env = dotenv.dotenv_values()
+DEBUG = True if os.environ.get('DEBUG') == 'true' else False
+
+if DEBUG:
+    env = dotenv.dotenv_values('.\.env.dev')  # TODO: change path with os.path.join("c:", "foo")
+else:
+    env = dotenv.dotenv_values()
+
 
 DBMS = env["DBMS"]
 USER_NAME = env["USER_NAME"]
