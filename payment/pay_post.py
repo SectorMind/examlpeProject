@@ -9,7 +9,7 @@ from app.exeptions import BaseException
 
 
 def generate_post_info(
-        out_sum: int | float,
+        out_sum: str,
         merchant_login: str,
         description: str,
         signature_value: str,
@@ -27,9 +27,15 @@ def generate_post_info(
 
 
 if __name__ == '__main__':
+    SHOPID = SHOPID.lower()
     print(SHOPID)
-    out_sum = 100
-    sign_value = calculate_signature(SHOPID, out_sum, PASSWORD1)
+    invoice_id = ''
+    sum_str = 10.11167
+    out_sum = '{:,.2f}'.format(sum_str)
+    sign_value = calculate_signature(SHOPID,
+                                     out_sum,
+                                     invoice_id,
+                                     PASSWORD1)
     print(sign_value)
     print(int(sign_value, base=16))
     try:
@@ -38,12 +44,12 @@ if __name__ == '__main__':
     except BaseException as e:
         print(e)
     payload = {
-        "MerchantLogin": str(SHOPID),
-        "OutSum": 100,
-        "invoiceID": "",
+        "MerchantLogin": SHOPID,
+        "OutSum": out_sum,
+        "invoiceID": invoice_id,
         "Receipt": "description",
         "SignatureValue": sign_value,
-        # "IsTest": 1
+        "IsTest": 1  # 1 for test mode, 0 for production
     }
     response = requests.post("https://auth.robokassa.ru/Merchant/Indexjson.aspx?", data=payload)
     print(response.text)

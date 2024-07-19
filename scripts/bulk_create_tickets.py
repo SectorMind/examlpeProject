@@ -5,7 +5,7 @@ from datetime import datetime
 API_URL = "http://127.0.0.1:8000/api/v1/tickets/"
 
 
-def generate_tickets(num_rows: int, seats_per_row: int):
+def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
     tickets = []
     for row in range(num_rows + 1):
         if row == 0:
@@ -19,7 +19,7 @@ def generate_tickets(num_rows: int, seats_per_row: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
-                    "event_id": 1,
+                    "event_id": event_id,
                     "row": str(row),
                     "seat": str(seat),
                     "category_id": category_id,
@@ -36,7 +36,7 @@ def generate_tickets(num_rows: int, seats_per_row: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
-                    "event_id": 1,
+                    "event_id": event_id,
                     "row": str(row),
                     "seat": str(seat),
                     "category_id": category_id,
@@ -53,7 +53,7 @@ def generate_tickets(num_rows: int, seats_per_row: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
-                    "event_id": 1,
+                    "event_id": event_id,
                     "row": str(row),
                     "seat": str(seat),
                     "category_id": category_id,
@@ -70,7 +70,7 @@ def generate_tickets(num_rows: int, seats_per_row: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
-                    "event_id": 1,
+                    "event_id": event_id,
                     "row": str(row),
                     "seat": str(seat),
                     "category_id": category_id,
@@ -85,7 +85,7 @@ def generate_tickets(num_rows: int, seats_per_row: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
-                    "event_id": 1,
+                    "event_id": event_id,
                     "row": str(row),
                     "seat": str(seat),
                     "category_id": category_id,
@@ -98,10 +98,10 @@ def generate_tickets(num_rows: int, seats_per_row: int):
 
 
 if __name__ == '__main__':
-    num_rows = 22  # Example: number of rows
-    seats_per_row = 22  # Example: seats per row
+    # num_rows = 22  # Example: number of rows
+    # seats_per_row = 22  # Example: seats per row
 
-    tickets = generate_tickets(num_rows, seats_per_row)
+    tickets = generate_tickets(num_rows=22, seats_per_row=22, event_id=1)
     print(tickets)
 
     # data = {"tickets": tickets}
