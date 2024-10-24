@@ -1,0 +1,4 @@
+docker run --rm -v certbot_certs:/etc/letsencrypt -p 80:80 certbot/certbot certonly --standalone -d site.com -d www.site.com --email your-email@example.com --agree-tos --non-interactive
+docker-compose up --build
+docker exec nginx nginx -s reload
+

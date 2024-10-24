@@ -35,5 +35,9 @@ SHOPID = env.get('SHOPID')
 PASSWORD1 = env.get('PASSWORD1')
 PASSWORD2 = env.get('PASSWORD2')
 
+SHOP_ID_YOOKASSA = env.get('SHOP_ID_YOOKASSA')
+SECRET_KEY_YOOKASSA = env.get('SECRET_KEY_YOOKASSA')
+AUTH_TOKEN_YOOKASSA = env.get('AUTH_TOKEN_YOOKASSA')
+
 if __name__ == '__main__':
     print(secrets.token_hex(20))

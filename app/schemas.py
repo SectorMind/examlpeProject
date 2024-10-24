@@ -159,6 +159,14 @@ class City(BaseModel):
         orm_mode = True
 
 
+# pay
+class PaymentRequest(BaseModel):
+    amount: float
+    currency: str = "RUB"
+    description: str
+    return_url: str
+
+
 if __name__ == '__main__':
     your_uuid = uuid.uuid4()
     print(str(your_uuid))
