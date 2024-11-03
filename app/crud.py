@@ -263,16 +263,16 @@ async def delete_event_ticket_category(db: AsyncSession, category_id: int):
 
 
 async def create_ticket(db: AsyncSession, ticket: TicketSchema):
-    result = await db.execute(select(TicketCategory).filter(TicketCategory.category == ticket.category.category))
-    db_category = result.scalars().first()
-    if not db_category:
-        raise HTTPException(status_code=404, detail=f"Ticket category {ticket.category.category} does not exist")
+    result = await db.execute(select(EventTicketCategory).filter(EventTicketCategory.id == ticket.event_category_id))
+    db_event_category = result.scalars().first()
+    if not db_event_category:
+        raise HTTPException(status_code=404, detail=f"Event category with ID {ticket.event_category_id} does not exist")
 
     db_ticket = Ticket(
-        event_name=ticket.event_name,
+        # event_name=ticket.event_name,
         row=ticket.row,
         seat=ticket.seat,
-        category_id=db_category.id,
+        event_category_id=db_event_category.id,
         created_at=ticket.created_at,
         updated_at=ticket.updated_at
     )

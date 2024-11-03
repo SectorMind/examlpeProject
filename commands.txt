@@ -2,3 +2,36 @@ docker run --rm -v certbot_certs:/etc/letsencrypt -p 80:80 certbot/certbot certo
 docker-compose up --build
 docker exec nginx nginx -s reload
 
+
+
+
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-level debug
+
+
+CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--log-level", "debug"]
+gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug
+
+
+docker-compose down
+docker-compose up --build
+
+
+# For dump db
+"C:\Program Files\PostgreSQL\16\bin\pg_dump.exe" --file "C:\Users\S\Documents\my_easy.sql" --host "localhost" --port "5432" --username "postgres" --role "postgres" --format=p --compress "0" --encoding "UTF8" --dbname "my_easy"
+
+#Alternative
+Right click -> Backup...
+
+Filename:my_easy.sql
+Format:Plain
+Compresssion ratio:0
+Encoding:UTF-8
+Number of jobs:1
+Role name:postgres
+
+
+scp db_backup.sql user@server_ip:/path/to/your/directory
+
+docker-compose down -v
+docker-compose up -d
+

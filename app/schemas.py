@@ -44,10 +44,10 @@ class Consumer(BaseModel):
 
 class Ticket(BaseModel):
     id: int
-    event_id: int
+    # event_id: int
     row: str
     seat: str
-    category_id: int
+    event_category_id: int
     created_at: datetime
     updated_at: datetime
 

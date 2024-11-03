@@ -1,16 +1,7 @@
-# nginx/default.conf
-
+# HTTP to HTTPS redirection
 server {
     listen 80;
-    server_name site.com www.site.com;
-
-    location / {
-        proxy_pass http://web:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    server_name select-ticket.ru www.select-ticket.ru;
 
     # Redirect all HTTP requests to HTTPS
     location / {
@@ -18,21 +9,23 @@ server {
     }
 }
 
+# HTTPS server block
 server {
     listen 443 ssl;
-    server_name site.com www.site.com;
+    server_name select-ticket.ru www.select-ticket.ru;
 
     # SSL certificate and key file paths (for Let's Encrypt certificates)
-    ssl_certificate /etc/letsencrypt/live/site.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/site.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/select-ticket.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/select-ticket.ru/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
+    # Proxy pass to FastAPI app
     location / {
-        proxy_pass http://web:8000;
+        proxy_pass http://fastapi_app:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

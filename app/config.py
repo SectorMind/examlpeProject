@@ -10,7 +10,8 @@ load_dotenv()
 DEBUG = True if os.environ.get('DEBUG') == 'true' else False
 
 if DEBUG:
-    env = dotenv.dotenv_values('.\.env.dev')  # TODO: change path with os.path.join("c:", "foo")
+    # env = dotenv.dotenv_values('.\.env.dev')  # TODO: change path with os.path.join("c:", "foo")
+    env = dotenv.dotenv_values('.\.env')  # TODO: change path with os.path.join("c:", "foo")
 else:
     env = dotenv.dotenv_values()
 
