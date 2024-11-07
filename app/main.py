@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 # from app.database import Base, engine
 from app.routers import consumer, event, city, ticket, ticket_category, consumer_ticket_link, user, auth, \
     event_ticket_category
@@ -28,6 +29,14 @@ logging.basicConfig(
 # logger = logging.getLogger("uvicorn.access")
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://example.com"],  # List of allowed origins (you can add more)
+    allow_credentials=True,  # Allow cookies and credentials
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Middleware to log requests and responses
 # @app.middleware("http")

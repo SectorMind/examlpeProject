@@ -19,6 +19,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
@@ -35,6 +36,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
@@ -51,6 +53,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
@@ -67,6 +70,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
@@ -81,6 +85,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
@@ -95,6 +100,7 @@ def generate_tickets(num_rows: int, seats_per_row: int, event_id: int):
                 else:
                     continue  # In case there's an unexpected seat number
                 ticket = {
+                    "id": int(0),
                     "row": str(row),
                     "seat": str(seat),
                     "event_category_id": event_category_id,
